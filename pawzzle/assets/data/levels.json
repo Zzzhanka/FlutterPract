@@ -1,0 +1,74 @@
+[
+  {
+    "id": 1,
+    "imagePath": "assets/images/gameart/1.png",
+    "grid": 3,
+    "shuffleMoves": 10,
+    "isLocked": false,
+    "stars": 0
+  },
+  {
+    "id": 2,
+    "imagePath": "assets/images/gameart/2.png",
+    "grid": 4,
+    "shuffleMoves": 20,
+    "isLocked": true,
+    "stars": 0
+  },
+  {
+    "id": 3,
+    "imagePath": "assets/images/gameart/3.png",
+    "grid": 5,
+    "shuffleMoves": 30,
+    "isLocked": true,
+    "stars": 0
+  },
+  {
+    "id": 1,
+    "imagePath": "assets/images/gameart/1.png",
+    "grid": 3,
+    "shuffleMoves": 10,
+    "isLocked": false,
+    "stars": 0
+  },
+  {
+    "id": 2,
+    "imagePath": "assets/images/gameart/2.png",
+    "grid": 4,
+    "shuffleMoves": 20,
+    "isLocked": true,
+    "stars": 0
+  },
+  {
+    "id": 3,
+    "imagePath": "assets/images/gameart/3.png",
+    "grid": 5,
+    "shuffleMoves": 30,
+    "isLocked": true,
+    "stars": 0
+  },
+  {
+    "id": 4,
+    "imagePath": "assets/images/gameart/4.png",
+    "grid": 3,
+    "shuffleMoves": 10,
+    "isLocked": false,
+    "stars": 0
+  },
+  {
+    "id": 5,
+    "imagePath": "assets/images/gameart/5.png",
+    "grid": 4,
+    "shuffleMoves": 20,
+    "isLocked": true,
+    "stars": 0
+  },
+  {
+    "id": 6,
+    "imagePath": "assets/images/gameart/6.png",
+    "grid": 5,
+    "shuffleMoves": 30,
+    "isLocked": true,
+    "stars": 0
+  }
+]
