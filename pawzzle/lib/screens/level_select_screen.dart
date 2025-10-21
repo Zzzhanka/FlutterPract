@@ -11,7 +11,6 @@ class LevelSelectScreen extends StatefulWidget {
 
 class _LevelSelectScreenState extends State<LevelSelectScreen> {
   late Future<List<PuzzleLevel>> _levelsFuture;
-  final PageController _pageController = PageController();
 
   @override
   void initState() {
@@ -22,168 +21,159 @@ class _LevelSelectScreenState extends State<LevelSelectScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: FutureBuilder<List<PuzzleLevel>>(
-        future: _levelsFuture,
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
-          }
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage('assets/images/ui/tutorial_bg.png'),
+            fit: BoxFit.cover,
+          ),
+        ),
+        child: SafeArea(
+          child: FutureBuilder<List<PuzzleLevel>>(
+            future: _levelsFuture,
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              final levels = snapshot.data!;
+              final totalPages = (levels.length / 15).ceil();
 
-          final levels = snapshot.data!;
-          final pageCount = (levels.length / 15).ceil();
-
-          return Stack(
-            children: [
-              // фон
-              Positioned.fill(
-                child: Image.asset(
-                  'assets/images/ui/tutorial_bg.png',
-                  fit: BoxFit.cover,
-                ),
-              ),
-              // контент
-              PageView.builder(
-                controller: _pageController,
-                itemCount: pageCount,
+              return PageView.builder(
+                itemCount: totalPages,
                 itemBuilder: (context, pageIndex) {
                   final start = pageIndex * 15;
                   final end = (start + 15).clamp(0, levels.length);
                   final pageLevels = levels.sublist(start, end);
 
-                  return GridView.builder(
-                    padding: const EdgeInsets.all(24),
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 5,
-                          mainAxisSpacing: 20,
-                          crossAxisSpacing: 20,
-                          childAspectRatio: 1,
-                        ),
-                    itemCount: pageLevels.length,
-                    itemBuilder: (context, i) {
-                      final lvl = pageLevels[i];
-
-                      return GestureDetector(
-                        onTap: () {
-                          if (!lvl.isLocked) {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => GameScreen(level: lvl),
-                              ),
-                            );
-                          }
-                        },
-                        child: Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            // фон карточки
-                            Container(
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(16),
-                                image: DecorationImage(
-                                  image: AssetImage(
-                                    lvl.isLocked
-                                        ? 'assets/images/ui/locked_bg.png'
-                                        : lvl.imagePath.isNotEmpty
-                                        ? lvl.imagePath
-                                        : 'assets/images/ui/level_placeholder.png',
+                  return Center(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 40,
+                        vertical: 35,
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Text(
+                            'Выбор уровня',
+                            style: TextStyle(
+                              fontSize: 28,
+                              fontWeight: FontWeight.bold,
+                              color: Color.fromARGB(255, 0, 0, 0),
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          Expanded(
+                            child: GridView.builder(
+                              shrinkWrap: true,
+                              gridDelegate:
+                                  const SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: 5,
+                                    crossAxisSpacing: 20,
+                                    mainAxisSpacing: 20,
+                                    childAspectRatio: 1.5,
                                   ),
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                            ),
-                            // замочек
-                            if (lvl.isLocked)
-                              const Icon(
-                                Icons.lock,
-                                color: Colors.white,
-                                size: 36,
-                              ),
-                            // номер уровня
-                            Positioned(
-                              bottom: 40,
-                              child: Text(
-                                'Уровень ${lvl.id}',
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                  shadows: [
-                                    Shadow(
-                                      offset: Offset(1, 1),
-                                      blurRadius: 3,
-                                      color: Colors.black54,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            // звёзды
-                            if (!lvl.isLocked)
-                              Positioned(
-                                bottom: 10,
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: List.generate(3, (index) {
-                                    return Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 2,
+                              itemCount: pageLevels.length,
+                              itemBuilder: (context, i) {
+                                final level = pageLevels[i];
+                                return GestureDetector(
+                                  onTap: level.isLocked
+                                      ? null
+                                      : () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (_) =>
+                                                  GameScreen(level: level),
+                                            ),
+                                          );
+                                        },
+                                  child: Stack(
+                                    alignment: Alignment.center,
+                                    children: [
+                                      // общий фон
+                                      Image.asset(
+                                        'assets/images/ui/level_bg.png',
+                                        fit: BoxFit.cover,
                                       ),
-                                      child: Image.asset(
-                                        'assets/images/ui/star.png',
-                                        height: 18,
-                                        color: index < lvl.stars
-                                            ? Colors.yellow
-                                            : Colors.grey[400],
+
+                                      // номер уровня
+                                      Positioned(
+                                        top: 24,
+                                        child: Text(
+                                          'Lv. ${level.id}',
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                            color: level.isLocked
+                                                ? Colors.grey.shade400
+                                                : Colors.white,
+                                          ),
+                                        ),
                                       ),
-                                    );
-                                  }),
-                                ),
-                              ),
-                          ],
-                        ),
-                      );
-                    },
+
+                                      // замок или звёзды
+                                      if (level.isLocked)
+                                        Image.asset(
+                                          'assets/images/ui/lock_icon.png',
+                                          width: 18,
+                                          height: 18,
+                                        )
+                                      else
+                                        Positioned(
+                                          bottom: 24,
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: List.generate(3, (index) {
+                                              final isEarned =
+                                                  index <
+                                                  level
+                                                      .stars; // звезда заработана?
+                                              return Padding(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      horizontal: 2,
+                                                    ),
+                                                child: Image.asset(
+                                                  'assets/images/ui/star_icon.png',
+                                                  width: 18,
+                                                  height: 18,
+                                                  color: isEarned
+                                                      ? Colors.yellow
+                                                      : const Color.fromARGB(
+                                                          255,
+                                                          96,
+                                                          96,
+                                                          96,
+                                                        ).withOpacity(0.4),
+                                                ),
+                                              );
+                                            }),
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          Text(
+                            'Страница ${pageIndex + 1}/$totalPages',
+                            style: const TextStyle(color: Colors.white70),
+                          ),
+                        ],
+                      ),
+                    ),
                   );
                 },
-              ),
-              // индикатор страниц
-              Positioned(
-                bottom: 20,
-                left: 0,
-                right: 0,
-                child: Center(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(pageCount, (index) {
-                      return AnimatedBuilder(
-                        animation: _pageController,
-                        builder: (context, child) {
-                          double selected = 0;
-                          if (_pageController.hasClients) {
-                            selected = _pageController.page ?? 0;
-                          }
-                          return Container(
-                            margin: const EdgeInsets.symmetric(horizontal: 4),
-                            width: selected.round() == index ? 12 : 8,
-                            height: 8,
-                            decoration: BoxDecoration(
-                              color: selected.round() == index
-                                  ? Colors.white
-                                  : Colors.white.withOpacity(0.5),
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                          );
-                        },
-                      );
-                    }),
-                  ),
-                ),
-              ),
-            ],
-          );
-        },
+              );
+            },
+          ),
+        ),
       ),
     );
   }
