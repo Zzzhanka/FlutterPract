@@ -1,37 +1,38 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LevelStorage {
-  static const _unlockedKey = 'unlocked_levels';
-  static const _starsKey = 'level_stars';
+  static const String _keyPrefix = 'level_';
 
-  /// Разблокировать следующий уровень
-  static Future<void> unlockNextLevel(int currentId) async {
+  /// Сохраняем результат уровня (время прохождения)
+  static Future<void> saveLevelResult(int levelId, int seconds) async {
     final prefs = await SharedPreferences.getInstance();
-    final unlocked = prefs.getInt(_unlockedKey) ?? 1;
-    if (currentId >= unlocked) {
-      await prefs.setInt(_unlockedKey, currentId + 1);
-    }
+    await prefs.setInt('$_keyPrefix$levelId', seconds);
   }
 
-  /// Получить количество звёзд для уровня
-  static Future<int> getStars(int id) async {
+  /// Получаем результат уровня, если есть
+  static Future<int?> getLevelResult(int levelId) async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getInt('$_starsKey$id') ?? 0;
+    return prefs.getInt('$_keyPrefix$levelId');
   }
 
-  /// Сохранить количество звёзд
-  static Future<void> saveStars(int id, int stars) async {
+  /// Проверяем, открыт ли уровень
+  static Future<bool> isLevelUnlocked(int levelId) async {
     final prefs = await SharedPreferences.getInstance();
-    final current = prefs.getInt('$_starsKey$id') ?? 0;
-    if (stars > current) {
-      await prefs.setInt('$_starsKey$id', stars);
-    }
+    if (levelId == 1) return true; // первый всегда доступен
+    final prevLevel = prefs.getInt('$_keyPrefix${levelId - 1}');
+    return prevLevel != null; // открыт, если предыдущий пройден
   }
 
-  /// Проверить, открыт ли уровень
-  static Future<bool> isLevelUnlocked(int id) async {
+  /// Открываем следующий уровень после успешного прохождения
+  static Future<void> unlockNextLevel(int currentLevelId) async {
     final prefs = await SharedPreferences.getInstance();
-    final unlocked = prefs.getInt(_unlockedKey) ?? 1;
-    return id <= unlocked;
+    await prefs.setBool('unlocked_${currentLevelId + 1}', true);
+  }
+
+  /// Проверка: получено ли 3 звезды (по времени)
+  static int calculateStars(int seconds) {
+    if (seconds <= 30) return 3;
+    if (seconds <= 60) return 2;
+    return 1;
   }
 }

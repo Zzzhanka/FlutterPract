@@ -1,167 +1,241 @@
+import 'dart:async';
 import 'dart:math';
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
+import 'package:flutter/services.dart';
 import '../models/puzzle_level.dart';
 import '../storage/level_storage.dart';
 
 class SlidingPuzzleBoard extends StatefulWidget {
   final PuzzleLevel level;
-  const SlidingPuzzleBoard({super.key, required this.level});
+  final String imagePath;
+  final int gridSize;
+  final bool paused;
+  final VoidCallback? onWin;
+
+  const SlidingPuzzleBoard({
+    Key? key,
+    required this.level,
+    required this.imagePath,
+    this.gridSize = 3,
+    this.paused = false,
+    this.onWin,
+  }) : super(key: key);
 
   @override
   State<SlidingPuzzleBoard> createState() => _SlidingPuzzleBoardState();
 }
 
 class _SlidingPuzzleBoardState extends State<SlidingPuzzleBoard>
-    with SingleTickerProviderStateMixin {
-  late List<int> _tiles;
-  late int _emptyIndex;
-  late Ticker _ticker;
-  double _elapsed = 0;
+    with TickerProviderStateMixin {
+  late List<List<int>> board;
+  late int emptyX;
+  late int emptyY;
+  ui.Image? image;
+  bool isShuffling = true;
+  bool isWon = false;
+  late Timer timer;
+  int seconds = 0;
 
   @override
   void initState() {
     super.initState();
-    _initPuzzle();
-    _ticker = createTicker((elapsed) {
-      setState(() => _elapsed = elapsed.inSeconds.toDouble());
-    });
-    _ticker.start();
+    _initBoard();
+    _loadImage();
+    _startTimer();
   }
 
-  void _initPuzzle() {
-    _tiles = List.generate(16, (i) => i);
-    _emptyIndex = 15;
-    _shuffle();
-  }
-
-  void _shuffle() {
-    final rand = Random();
-    for (int i = 0; i < 500; i++) {
-      final moves = _availableMoves();
-      final move = moves[rand.nextInt(moves.length)];
-      _swap(move);
-    }
-  }
-
-  List<int> _availableMoves() {
-    final moves = <int>[];
-    final row = _emptyIndex ~/ 4;
-    final col = _emptyIndex % 4;
-    if (row > 0) moves.add(_emptyIndex - 4);
-    if (row < 3) moves.add(_emptyIndex + 4);
-    if (col > 0) moves.add(_emptyIndex - 1);
-    if (col < 3) moves.add(_emptyIndex + 1);
-    return moves;
-  }
-
-  void _swap(int tileIndex) {
-    setState(() {
-      final temp = _tiles[tileIndex];
-      _tiles[tileIndex] = _tiles[_emptyIndex];
-      _tiles[_emptyIndex] = temp;
-      _emptyIndex = tileIndex;
-    });
-  }
-
-  bool _isSolved() {
-    for (int i = 0; i < 16; i++) {
-      if (_tiles[i] != i) return false;
-    }
-    return true;
-  }
-
-  void _onTileTap(int index) {
-    if (_availableMoves().contains(index)) {
-      _swap(index);
-      if (_isSolved()) {
-        _ticker.stop();
-        _showWinDialog(context);
+  @override
+  void didUpdateWidget(covariant SlidingPuzzleBoard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.paused != oldWidget.paused) {
+      if (widget.paused) {
+        timer.cancel();
+      } else {
+        _startTimer();
       }
     }
   }
 
-  void _showWinDialog(BuildContext context) async {
-    int stars = 1;
-    if (_elapsed < 30)
-      stars = 3;
-    else if (_elapsed < 60)
-      stars = 2;
-
-    await LevelStorage.unlockNextLevel(widget.level.id);
-    await LevelStorage.saveStars(widget.level.id, stars);
-
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) => AlertDialog(
-        backgroundColor: Colors.white.withOpacity(0.9),
-        title: const Text('Победа!'),
-        content: Text('Вы собрали пазл за $_elapsed сек.'),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              Navigator.pop(context);
-            },
-            child: const Text('ОК'),
-          ),
-        ],
-      ),
-    );
-  }
-
   @override
   void dispose() {
-    _ticker.dispose();
+    timer.cancel();
     super.dispose();
+  }
+
+  void _startTimer() {
+    timer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (!widget.paused && mounted && !isWon) {
+        setState(() => seconds++);
+      }
+    });
+  }
+
+  void _initBoard() {
+    final n = widget.gridSize;
+    board = List.generate(n, (i) => List.generate(n, (j) => i * n + j));
+    emptyX = n - 1;
+    emptyY = n - 1;
+    board[emptyX][emptyY] = -1; // пустая клетка
+
+    _shuffleBoard();
+  }
+
+  void _shuffleBoard() {
+    final random = Random();
+    const moves = [Offset(0, 1), Offset(1, 0), Offset(0, -1), Offset(-1, 0)];
+    for (int i = 0; i < 200; i++) {
+      final move = moves[random.nextInt(4)];
+      final newX = emptyX + move.dx.toInt();
+      final newY = emptyY + move.dy.toInt();
+      if (newX >= 0 &&
+          newX < widget.gridSize &&
+          newY >= 0 &&
+          newY < widget.gridSize) {
+        _swapTiles(newX, newY);
+      }
+    }
+    setState(() => isShuffling = false);
+  }
+
+  Future<void> _loadImage() async {
+    final data = await rootBundle.load(widget.imagePath);
+    final img = await decodeImageFromList(data.buffer.asUint8List());
+    setState(() => image = img);
+  }
+
+  void _swapTiles(int x, int y) {
+    final temp = board[emptyX][emptyY];
+    board[emptyX][emptyY] = board[x][y];
+    board[x][y] = temp;
+    emptyX = x;
+    emptyY = y;
+  }
+
+  bool _canMove(int x, int y) {
+    return (x == emptyX && (y - emptyY).abs() == 1) ||
+        (y == emptyY && (x - emptyX).abs() == 1);
+  }
+
+  void _moveTile(int x, int y) {
+    if (isWon || isShuffling || widget.paused) return;
+    if (_canMove(x, y)) {
+      setState(() {
+        _swapTiles(x, y);
+      });
+      _checkWin();
+    }
+  }
+
+  void _checkWin() {
+    int count = 0;
+    for (int i = 0; i < widget.gridSize; i++) {
+      for (int j = 0; j < widget.gridSize; j++) {
+        if (i == widget.gridSize - 1 && j == widget.gridSize - 1) continue;
+        if (board[i][j] != count) return;
+        count++;
+      }
+    }
+
+    setState(() {
+      isWon = true;
+    });
+
+    timer.cancel();
+    _saveProgress();
+    widget.onWin?.call();
+  }
+
+  void _saveProgress() async {
+    final stars = seconds < 20
+        ? 3
+        : seconds < 40
+        ? 2
+        : 1;
+    await LevelStorage.saveLevelResult(widget.level.id, stars);
   }
 
   @override
   Widget build(BuildContext context) {
-    final image = Image.asset(widget.level.imagePath);
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Text(
-          '⏱ ${_elapsed.toStringAsFixed(1)} сек',
-          style: const TextStyle(
-            color: Color.fromARGB(255, 0, 0, 0),
-            fontSize: 16,
-          ),
-        ),
-        const SizedBox(height: 10),
-        SizedBox(
-          width: 320,
-          height: 320,
-          child: GridView.builder(
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 4,
-              mainAxisSpacing: 2,
-              crossAxisSpacing: 2,
-            ),
-            itemCount: 16,
-            itemBuilder: (context, i) {
-              final tile = _tiles[i];
-              if (tile == 15) return const SizedBox.shrink();
-              final row = tile ~/ 4;
-              final col = tile % 4;
-              return GestureDetector(
-                onTap: () => _onTileTap(i),
-                child: ClipRect(
-                  child: Align(
-                    alignment: Alignment((col / 1.5) - 1, (row / 1.5) - 1),
-                    widthFactor: 0.25,
-                    heightFactor: 0.25,
-                    child: image,
+    final size = MediaQuery.of(context).size.width * 0.6;
+    final tileSize = size / widget.gridSize;
+
+    if (image == null) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    return Center(
+      child: SizedBox(
+        width: size,
+        height: size,
+        child: Stack(
+          children: [
+            for (int i = 0; i < widget.gridSize; i++)
+              for (int j = 0; j < widget.gridSize; j++)
+                if (board[i][j] != -1)
+                  Positioned(
+                    left: j * tileSize,
+                    top: i * tileSize,
+                    child: GestureDetector(
+                      onTap: () => _moveTile(i, j),
+                      child: CustomPaint(
+                        size: Size(tileSize, tileSize),
+                        painter: _PuzzleTilePainter(
+                          image!,
+                          board[i][j],
+                          widget.gridSize,
+                        ),
+                      ),
+                    ),
+                  ),
+            if (isWon)
+              Container(
+                width: size,
+                height: size,
+                color: Colors.black.withOpacity(0.5),
+                child: const Center(
+                  child: Text(
+                    'Победа!',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 36,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
-              );
-            },
-          ),
+              ),
+          ],
         ),
-      ],
+      ),
     );
   }
+}
+
+class _PuzzleTilePainter extends CustomPainter {
+  final ui.Image image;
+  final int index;
+  final int gridSize;
+
+  _PuzzleTilePainter(this.image, this.index, this.gridSize);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final tileX = index ~/ gridSize;
+    final tileY = index % gridSize;
+
+    final srcRect = Rect.fromLTWH(
+      tileY * (image.width / gridSize),
+      tileX * (image.height / gridSize),
+      image.width / gridSize,
+      image.height / gridSize,
+    );
+
+    final dstRect = Rect.fromLTWH(0, 0, size.width, size.height);
+
+    final paint = Paint();
+    canvas.drawImageRect(image, srcRect, dstRect, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
