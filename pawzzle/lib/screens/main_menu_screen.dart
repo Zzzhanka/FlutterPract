@@ -42,7 +42,7 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
             height: 95,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: Colors.white.withOpacity(0.15),
+              color: Colors.white,
               boxShadow: const [
                 BoxShadow(
                   color: Colors.black26,
@@ -82,8 +82,9 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
                     'assets/images/ui/main_bg.png',
                     width: constraints.maxWidth,
                     height: constraints.maxHeight,
-                    errorBuilder: (c, e, s) =>
-                        Container(color: Colors.pink[50]),
+                    errorBuilder: (c, e, s) => Container(
+                      color: const Color.fromARGB(255, 255, 255, 255),
+                    ),
                   ),
                 ),
               ),

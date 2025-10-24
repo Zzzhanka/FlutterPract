@@ -19,8 +19,7 @@ class _GameScreenState extends State<GameScreen> {
   late Timer _timer;
   String _formattedTime = '00:00';
   late String imagePath;
-
-  int _resetCounter = 0; // ключ для перезапуска виджета
+  int _resetCounter = 0;
 
   @override
   void initState() {
@@ -69,6 +68,9 @@ class _GameScreenState extends State<GameScreen> {
                 Navigator.pop(context);
                 Navigator.pop(context);
               },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFFF80AB),
+              ),
               child: const Text('На выбор уровней'),
             ),
           ],
@@ -90,9 +92,9 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   void _restartLevel() {
-    Navigator.pop(context); // закрыть окно паузы
+    Navigator.pop(context);
     setState(() {
-      _resetCounter++; // обновляем ключ для ребилда
+      _resetCounter++;
       _isPaused = false;
       _stopwatch
         ..reset()
@@ -105,54 +107,86 @@ class _GameScreenState extends State<GameScreen> {
       context: context,
       barrierDismissible: false,
       builder: (context) => Dialog(
-        backgroundColor: Colors.white.withOpacity(0.9),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text(
-                'Пауза',
-                style: TextStyle(
-                  fontSize: 26,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
+        insetPadding: const EdgeInsets.symmetric(horizontal: 60, vertical: 140),
+        backgroundColor: Colors.transparent,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(24),
+              child: Image.asset(
+                'assets/images/ui/pause_bg.png',
+                fit: BoxFit.cover,
               ),
-              const SizedBox(height: 20),
-              _pauseButton(Icons.home, 'Главное меню', () {
-                Navigator.pop(context);
-                Navigator.pop(context);
-              }),
-              const SizedBox(height: 10),
-              _pauseButton(Icons.restart_alt, 'Рестарт', _restartLevel),
-              const SizedBox(height: 10),
-              _pauseButton(Icons.play_arrow, 'Продолжить', () {
-                Navigator.pop(context);
-                setState(() {
-                  _isPaused = false;
-                  _stopwatch.start();
-                });
-              }),
-            ],
-          ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 20.0,
+                vertical: 28.0,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    'Пауза',
+                    style: TextStyle(
+                      fontSize: 26,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  const SizedBox(height: 25),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      _pauseIconButton(Icons.home, () {
+                        Navigator.pop(context);
+                        Navigator.pop(context);
+                      }),
+                      const SizedBox(width: 20),
+                      _pauseIconButton(Icons.restart_alt, _restartLevel),
+                      const SizedBox(width: 20),
+                      _pauseIconButton(Icons.play_arrow, () {
+                        Navigator.pop(context);
+                        setState(() {
+                          _isPaused = false;
+                          _stopwatch.start();
+                        });
+                      }),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _pauseButton(IconData icon, String text, VoidCallback onPressed) {
-    return ElevatedButton.icon(
-      icon: Icon(icon, size: 28),
-      label: Text(text, style: const TextStyle(fontSize: 18)),
-      style: ElevatedButton.styleFrom(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        backgroundColor: Colors.indigo.shade100,
-        foregroundColor: Colors.black87,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+  Widget _pauseIconButton(IconData icon, VoidCallback onPressed) {
+    return InkWell(
+      onTap: onPressed,
+      borderRadius: BorderRadius.circular(18),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.85),
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(
+            color: Colors.pinkAccent.withOpacity(0.4),
+            width: 2,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 4,
+              offset: const Offset(2, 2),
+            ),
+          ],
+        ),
+        child: Icon(icon, size: 32, color: Colors.pinkAccent),
       ),
-      onPressed: onPressed,
     );
   }
 
@@ -176,55 +210,73 @@ class _GameScreenState extends State<GameScreen> {
         child: SafeArea(
           child: Stack(
             children: [
-              // Сам пазл
               Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // Таймер над пазлом
+                    // таймер с фоновым изображением
                     Container(
-                      margin: const EdgeInsets.only(bottom: 16),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 8,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.4),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        _formattedTime,
-                        style: const TextStyle(
-                          fontSize: 22,
-                          color: Colors.white,
-                          letterSpacing: 1,
-                          fontWeight: FontWeight.w600,
-                        ),
+                      margin: const EdgeInsets.only(bottom: 1, top: 10),
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          Image.asset(
+                            'assets/images/ui/timer_bg.png',
+                            height: 70,
+                            fit: BoxFit.contain,
+                          ),
+                          Text(
+                            _formattedTime,
+                            style: const TextStyle(
+                              fontSize: 24,
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 1,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
 
-                    // Пазл
-                    SlidingPuzzleBoard(
-                      key: ValueKey(_resetCounter),
-                      imagePath: imagePath,
-                      level: widget.level,
-                      onWin: _onWin,
+                    // подложка (фон блокнота) под пазл
+                    Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        Image.asset(
+                          'assets/images/ui/puzzle_bg.png',
+                          width: MediaQuery.of(context).size.width * 0.7,
+                          fit: BoxFit.contain,
+                        ),
+                        Transform.scale(
+                          scale: 0.7,
+                          child: SlidingPuzzleBoard(
+                            key: ValueKey(_resetCounter),
+                            imagePath: imagePath,
+                            level: widget.level,
+                            onWin: _onWin,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
               ),
 
-              // Постоянная кнопка паузы
+              // кнопка паузы
               Positioned(
                 top: 20,
                 right: 20,
                 child: GestureDetector(
                   onTap: _togglePause,
                   child: Container(
-                    padding: const EdgeInsets.all(8),
+                    padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.4),
+                      color: Colors.pinkAccent.withOpacity(0.3),
                       shape: BoxShape.circle,
+                      border: Border.all(
+                        color: Colors.pinkAccent.withOpacity(0.5),
+                        width: 1.5,
+                      ),
                     ),
                     child: const Icon(
                       Icons.pause,
