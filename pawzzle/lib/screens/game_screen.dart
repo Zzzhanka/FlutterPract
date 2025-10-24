@@ -210,59 +210,65 @@ class _GameScreenState extends State<GameScreen> {
         child: SafeArea(
           child: Stack(
             children: [
-              Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // таймер с фоновым изображением
-                    Container(
-                      margin: const EdgeInsets.only(bottom: 1, top: 10),
+              // --- Контент без Center ---
+              Column(
+                mainAxisSize: MainAxisSize.max,
+                children: [
+                  const SizedBox(height: 40), // отступ сверху от края экрана
+                  // --- Таймер ---
+                  Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      Image.asset(
+                        'assets/images/ui/timer_bg.png',
+                        height: 65,
+                        fit: BoxFit.contain,
+                      ),
+                      Text(
+                        _formattedTime,
+                        style: const TextStyle(
+                          fontSize: 24,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1,
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(
+                    height: 10,
+                  ), // теперь небольшой зазор между таймером и пазлом
+                  // --- Пазл с подложкой ---
+                  Expanded(
+                    child: Center(
                       child: Stack(
                         alignment: Alignment.center,
                         children: [
                           Image.asset(
-                            'assets/images/ui/timer_bg.png',
-                            height: 70,
+                            'assets/images/ui/puzzle_bg.png',
+                            width: MediaQuery.of(context).size.width * 0.6,
                             fit: BoxFit.contain,
                           ),
-                          Text(
-                            _formattedTime,
-                            style: const TextStyle(
-                              fontSize: 24,
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 1,
+                          Transform.scale(
+                            scale: 0.7,
+                            child: SlidingPuzzleBoard(
+                              key: ValueKey(_resetCounter),
+                              imagePath: imagePath,
+                              level: widget.level,
+                              onWin: _onWin,
                             ),
                           ),
                         ],
                       ),
                     ),
+                  ),
 
-                    // подложка (фон блокнота) под пазл
-                    Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        Image.asset(
-                          'assets/images/ui/puzzle_bg.png',
-                          width: MediaQuery.of(context).size.width * 0.6,
-                          fit: BoxFit.contain,
-                        ),
-                        Transform.scale(
-                          scale: 0.6,
-                          child: SlidingPuzzleBoard(
-                            key: ValueKey(_resetCounter),
-                            imagePath: imagePath,
-                            level: widget.level,
-                            onWin: _onWin,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+                  const SizedBox(height: 40), // небольшой нижний отступ
+                ],
               ),
 
-              // кнопка паузы
+              // --- Кнопка паузы ---
               Positioned(
                 top: 20,
                 right: 20,

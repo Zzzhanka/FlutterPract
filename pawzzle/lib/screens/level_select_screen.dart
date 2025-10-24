@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/puzzle_level.dart';
 import 'game_screen.dart';
+import 'main_menu_screen.dart'; // убедись, что есть главный экран
 
 class LevelSelectScreen extends StatefulWidget {
   const LevelSelectScreen({super.key});
@@ -21,21 +22,17 @@ class _LevelSelectScreenState extends State<LevelSelectScreen> {
   }
 
   void _nextPage() {
-    if (_currentPage < 1000) {
-      _pageController.nextPage(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-      );
-    }
+    _pageController.nextPage(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+    );
   }
 
   void _prevPage() {
-    if (_currentPage > 0) {
-      _pageController.previousPage(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-      );
-    }
+    _pageController.previousPage(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+    );
   }
 
   @override
@@ -240,6 +237,39 @@ class _LevelSelectScreenState extends State<LevelSelectScreen> {
                           'assets/images/ui/arrow_right.png',
                           width: 60,
                           height: 60,
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  // --- Кнопка выхода в главное меню ---
+                  Positioned(
+                    top: 10,
+                    left: 10,
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const MainMenuScreen(),
+                          ),
+                        );
+                      },
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: const Color.fromARGB(
+                            255,
+                            255,
+                            255,
+                            255,
+                          ).withOpacity(0.3),
+                          shape: BoxShape.circle,
+                        ),
+                        padding: const EdgeInsets.all(8),
+                        child: Image.asset(
+                          'assets/images/ui/home_icon.png',
+                          width: 50,
+                          height: 50,
                         ),
                       ),
                     ),
