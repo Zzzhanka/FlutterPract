@@ -244,11 +244,11 @@ class _GameScreenState extends State<GameScreen> {
                       children: [
                         Image.asset(
                           'assets/images/ui/puzzle_bg.png',
-                          width: MediaQuery.of(context).size.width * 0.7,
+                          width: MediaQuery.of(context).size.width * 0.6,
                           fit: BoxFit.contain,
                         ),
                         Transform.scale(
-                          scale: 0.7,
+                          scale: 0.6,
                           child: SlidingPuzzleBoard(
                             key: ValueKey(_resetCounter),
                             imagePath: imagePath,

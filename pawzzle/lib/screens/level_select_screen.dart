@@ -21,17 +21,21 @@ class _LevelSelectScreenState extends State<LevelSelectScreen> {
   }
 
   void _nextPage() {
-    _pageController.nextPage(
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeInOut,
-    );
+    if (_currentPage < 1000) {
+      _pageController.nextPage(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
   }
 
   void _prevPage() {
-    _pageController.previousPage(
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeInOut,
-    );
+    if (_currentPage > 0) {
+      _pageController.previousPage(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
   }
 
   @override
@@ -57,6 +61,7 @@ class _LevelSelectScreenState extends State<LevelSelectScreen> {
 
               return Stack(
                 children: [
+                  // --- Страницы уровней ---
                   PageView.builder(
                     controller: _pageController,
                     onPageChanged: (i) => setState(() => _currentPage = i),
@@ -70,7 +75,7 @@ class _LevelSelectScreenState extends State<LevelSelectScreen> {
                         child: Padding(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 40,
-                            vertical: 30,
+                            vertical: 20,
                           ),
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -83,7 +88,9 @@ class _LevelSelectScreenState extends State<LevelSelectScreen> {
                                   color: Colors.black,
                                 ),
                               ),
-                              const SizedBox(height: 20),
+                              const SizedBox(height: 10),
+
+                              // --- Сетка уровней ---
                               Expanded(
                                 child: Center(
                                   child: GridView.builder(
@@ -94,8 +101,9 @@ class _LevelSelectScreenState extends State<LevelSelectScreen> {
                                     gridDelegate:
                                         const SliverGridDelegateWithFixedCrossAxisCount(
                                           crossAxisCount: 5,
-                                          crossAxisSpacing: 16,
-                                          mainAxisSpacing: 16,
+                                          crossAxisSpacing: 10,
+                                          mainAxisSpacing: 10,
+                                          childAspectRatio: 1.5,
                                         ),
                                     itemCount: pageLevels.length,
                                     itemBuilder: (context, i) {
@@ -111,26 +119,30 @@ class _LevelSelectScreenState extends State<LevelSelectScreen> {
                                                       level: level,
                                                     ),
                                                   ),
-                                                ).then(
-                                                  (_) => setState(() {
+                                                ).then((_) {
+                                                  setState(() {
                                                     _levelsFuture =
                                                         PuzzleLevel.loadLevels();
-                                                  }),
-                                                );
+                                                  });
+                                                });
                                               },
                                         child: Stack(
                                           alignment: Alignment.center,
                                           children: [
-                                            Image.asset(
-                                              'assets/images/ui/level_bg.png',
-                                              fit: BoxFit.cover,
+                                            ClipRRect(
+                                              borderRadius:
+                                                  BorderRadius.circular(16),
+                                              child: Image.asset(
+                                                'assets/images/ui/level_bg.png',
+                                                fit: BoxFit.cover,
+                                              ),
                                             ),
                                             Positioned(
-                                              top: 22,
+                                              top: 18,
                                               child: Text(
                                                 'Lv. ${level.id}',
                                                 style: TextStyle(
-                                                  fontSize: 16,
+                                                  fontSize: 14,
                                                   fontWeight: FontWeight.bold,
                                                   color: level.isLocked
                                                       ? Colors.grey.shade400
@@ -141,12 +153,12 @@ class _LevelSelectScreenState extends State<LevelSelectScreen> {
                                             if (level.isLocked)
                                               Image.asset(
                                                 'assets/images/ui/lock_icon.png',
-                                                width: 22,
-                                                height: 22,
+                                                width: 20,
+                                                height: 20,
                                               )
                                             else
                                               Positioned(
-                                                bottom: 20,
+                                                bottom: 18,
                                                 child: Row(
                                                   mainAxisAlignment:
                                                       MainAxisAlignment.center,
@@ -158,15 +170,20 @@ class _LevelSelectScreenState extends State<LevelSelectScreen> {
                                                     return Padding(
                                                       padding:
                                                           const EdgeInsets.symmetric(
-                                                            horizontal: 2,
+                                                            horizontal: 1.5,
                                                           ),
                                                       child: Image.asset(
                                                         'assets/images/ui/star_icon.png',
-                                                        width: 18,
-                                                        height: 18,
+                                                        width: 16,
+                                                        height: 16,
                                                         color: earned
                                                             ? Colors.yellow
-                                                            : Colors.white24,
+                                                            : const Color.fromARGB(
+                                                                80,
+                                                                114,
+                                                                114,
+                                                                114,
+                                                              ),
                                                       ),
                                                     );
                                                   }),
@@ -179,10 +196,13 @@ class _LevelSelectScreenState extends State<LevelSelectScreen> {
                                   ),
                                 ),
                               ),
-                              const SizedBox(height: 10),
+                              const SizedBox(height: 5),
                               Text(
                                 'Страница ${pageIndex + 1} / $totalPages',
-                                style: const TextStyle(color: Colors.white70),
+                                style: const TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 14,
+                                ),
                               ),
                             ],
                           ),
@@ -191,33 +211,39 @@ class _LevelSelectScreenState extends State<LevelSelectScreen> {
                     },
                   ),
 
-                  if (_currentPage > 0)
-                    Positioned(
-                      left: 10,
-                      top: MediaQuery.of(context).size.height / 2 - 30,
-                      child: IconButton(
-                        icon: const Icon(
-                          Icons.arrow_back_ios,
-                          color: Colors.white,
-                          size: 32,
+                  // --- Левая стрелка ---
+                  Positioned(
+                    left: 15,
+                    top: MediaQuery.of(context).size.height / 2 - 30,
+                    child: GestureDetector(
+                      onTap: _prevPage,
+                      child: Opacity(
+                        opacity: _currentPage > 0 ? 1.0 : 0.3,
+                        child: Image.asset(
+                          'assets/images/ui/arrow_left.png',
+                          width: 60,
+                          height: 60,
                         ),
-                        onPressed: _prevPage,
                       ),
                     ),
+                  ),
 
-                  if (_currentPage < totalPages - 1)
-                    Positioned(
-                      right: 10,
-                      top: MediaQuery.of(context).size.height / 2 - 30,
-                      child: IconButton(
-                        icon: const Icon(
-                          Icons.arrow_forward_ios,
-                          color: Colors.white,
-                          size: 32,
+                  // --- Правая стрелка ---
+                  Positioned(
+                    right: 15,
+                    top: MediaQuery.of(context).size.height / 2 - 30,
+                    child: GestureDetector(
+                      onTap: _nextPage,
+                      child: Opacity(
+                        opacity: _currentPage < totalPages - 1 ? 1.0 : 0.3,
+                        child: Image.asset(
+                          'assets/images/ui/arrow_right.png',
+                          width: 60,
+                          height: 60,
                         ),
-                        onPressed: _nextPage,
                       ),
                     ),
+                  ),
                 ],
               );
             },
