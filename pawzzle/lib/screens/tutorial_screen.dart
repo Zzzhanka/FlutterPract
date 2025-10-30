@@ -32,7 +32,7 @@ class TutorialScreen extends StatelessWidget {
                             Expanded(
                               flex: 5,
                               child: Image.asset(
-                                'assets/images/ui/tutorial_example.png', // твоя картинка
+                                'assets/images/ui/tutorial_example2.png',
                                 fit: BoxFit.contain,
                               ),
                             ),
@@ -46,15 +46,27 @@ class TutorialScreen extends StatelessWidget {
                       : Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Expanded(
-                              flex: 5,
+                            // --- Картинка сверху ---
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 20.0,
+                              ),
                               child: Image.asset(
-                                'assets/images/ui/tutorial_example.png',
+                                'assets/images/ui/tutorial_example2.png',
                                 fit: BoxFit.contain,
+                                height:
+                                    MediaQuery.of(context).size.height * 0.4,
                               ),
                             ),
-                            const SizedBox(height: 20),
-                            _buildTutorialCard(context),
+                            const SizedBox(height: 30),
+
+                            // --- Карточка с текстом и кнопкой ---
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 20.0,
+                              ),
+                              child: _buildTutorialCard(context),
+                            ),
                           ],
                         ),
                 );
@@ -70,7 +82,7 @@ class TutorialScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.85),
+        color: Colors.white.withOpacity(0.9),
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
