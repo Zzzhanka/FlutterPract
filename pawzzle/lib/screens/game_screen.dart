@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../models/puzzle_level.dart';
 import '../widgets/sliding_puzzle_board.dart';
 import 'level_select_screen.dart';
+import '../services/supabase_service.dart';
 
 class GameScreen extends StatefulWidget {
   final PuzzleLevel level;
@@ -43,9 +44,22 @@ class _GameScreenState extends State<GameScreen> {
     });
   }
 
-  void _onWin() {
+  void _onWin() async {
     _stopwatch.stop();
     _timer.cancel();
+
+    // получаем время в секундах
+    final elapsedSeconds = _stopwatch.elapsed.inSeconds;
+
+    // пока ставим фиксированно 3 звезды — потом сделаем реальную логику
+    final earnedStars = 3;
+
+    // ✅ сохраняем прогресс в Supabase
+    await SupabaseService.saveProgress(
+      levelId: widget.level.id,
+      time: elapsedSeconds,
+      stars: earnedStars,
+    );
 
     showDialog(
       context: context,
