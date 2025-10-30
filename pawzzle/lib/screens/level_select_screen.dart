@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 import '../models/puzzle_level.dart';
 import 'game_screen.dart';
 import 'main_menu_screen.dart'; // убедись, что есть главный экран
-import '../services/supabase_service.dart';
-import '../services/supabase_progress.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:collection/collection.dart';
+import '../services/level_service.dart';
 
 class LevelSelectScreen extends StatefulWidget {
   const LevelSelectScreen({super.key});
@@ -22,44 +21,7 @@ class _LevelSelectScreenState extends State<LevelSelectScreen> {
   @override
   void initState() {
     super.initState();
-    _levelsFuture = _loadLevelsWithProgress();
-  }
-
-  Future<List<PuzzleLevel>> _loadLevelsWithProgress() async {
-    // 1. Загружаем уровни из assets JSON
-    final levels = await PuzzleLevel.loadLevels();
-
-    // 2. Загружаем прогресс игрока из Supabase
-    final progressData = await Supabase.instance.client
-        .from('player_progress')
-        .select();
-
-    // 3. Применяем прогресс к уровням
-    for (var row in progressData) {
-      final levelId = row['level_id'];
-      final stars = row['stars'];
-
-      final level = levels.where((lvl) => lvl.id == levelId).firstOrNull;
-
-      if (level != null) {
-        level.stars = stars;
-        level.isLocked = false;
-      }
-
-      if (level != null) {
-        level.stars = stars;
-        level.isLocked = false; // раз прошёл — открыть
-      }
-    }
-
-    // 4. Открываем следующий уровень, если прошлый пройден
-    for (int i = 0; i < levels.length - 1; i++) {
-      if (levels[i].stars > 0) {
-        levels[i + 1].isLocked = false;
-      }
-    }
-
-    return levels;
+    _levelsFuture = LevelService.instance.fetchLevels();
   }
 
   void _nextPage() {
@@ -159,8 +121,9 @@ class _LevelSelectScreenState extends State<LevelSelectScreen> {
                                                   ),
                                                 ).then((_) {
                                                   setState(() {
-                                                    _levelsFuture =
-                                                        PuzzleLevel.loadLevels();
+                                                    _levelsFuture = LevelService
+                                                        .instance
+                                                        .fetchLevels();
                                                   });
                                                 });
                                               },

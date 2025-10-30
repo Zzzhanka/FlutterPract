@@ -12,6 +12,12 @@ void main() async {
     anonKey:
         'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZleHNmZ3RpYWx4c2JmdG5lZWNqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE4MzUyNTksImV4cCI6MjA3NzQxMTI1OX0.al6xNQUiS3kWm8x2u7E0aB3d-hZNPHAulW7ee1l0_mA',
   );
+  final supabase = Supabase.instance.client;
+
+  // Проверяем есть ли пользователь, если нет — создаём анонимного
+  // if (supabase.auth.currentUser == null) {
+  //   await supabase.auth.signInAnonymously();
+  // }
 
   runApp(const PawzzleApp());
 }

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../models/puzzle_level.dart';
 import '../widgets/sliding_puzzle_board.dart';
 import 'level_select_screen.dart';
-import '../services/supabase_service.dart';
+import '../services/level_service.dart';
 
 class GameScreen extends StatefulWidget {
   final PuzzleLevel level;
@@ -55,12 +55,11 @@ class _GameScreenState extends State<GameScreen> {
     final earnedStars = 3;
 
     // ✅ сохраняем прогресс в Supabase
-    await SupabaseService.saveProgress(
+    await LevelService.instance.saveLevelResult(
       levelId: widget.level.id,
-      time: elapsedSeconds,
       stars: earnedStars,
+      time: elapsedSeconds,
     );
-
     showDialog(
       context: context,
       barrierDismissible: false,

@@ -1,50 +1,32 @@
-class LevelData {
+class PuzzleLevel {
   final int id;
-  final String image;
-  final int grid;
-  final int shuffle;
-  double? bestTime; // лучшее время (в секундах)
-  int stars; // 0–3 звезды
-  bool unlocked; // открыт ли уровень
+  final String imagePath;
+  final int gridSize;
+  final int shuffleMoves;
 
-  LevelData({
+  bool isLocked;
+  int stars;
+
+  PuzzleLevel({
     required this.id,
-    required this.image,
-    required this.grid,
-    required this.shuffle,
-    this.bestTime,
+    required this.imagePath,
+    required this.gridSize,
+    required this.shuffleMoves,
+    this.isLocked = true,
     this.stars = 0,
-    this.unlocked = false,
   });
 
-  Map<String, dynamic> toJson() => {
-    'id': id,
-    'bestTime': bestTime,
-    'stars': stars,
-    'unlocked': unlocked,
-  };
-
-  factory LevelData.fromJson(Map<String, dynamic> json, LevelData base) {
-    return LevelData(
-      id: base.id,
-      image: base.image,
-      grid: base.grid,
-      shuffle: base.shuffle,
-      bestTime: json['bestTime']?.toDouble(),
-      stars: json['stars'] ?? 0,
-      unlocked: json['unlocked'] ?? false,
-    );
-  }
-
-  LevelData copyWith({double? bestTime, int? stars, bool? unlocked}) {
-    return LevelData(
-      id: id,
-      image: image,
-      grid: grid,
-      shuffle: shuffle,
-      bestTime: bestTime ?? this.bestTime,
-      stars: stars ?? this.stars,
-      unlocked: unlocked ?? this.unlocked,
+  factory PuzzleLevel.fromDb(
+    Map<String, dynamic> data,
+    Map<String, dynamic>? progress,
+  ) {
+    return PuzzleLevel(
+      id: data['id'],
+      imagePath: data['image_path'],
+      gridSize: data['grid_size'],
+      shuffleMoves: data['shuffle_moves'],
+      isLocked: progress?['unlocked'] ?? false,
+      stars: progress?['best_stars'] ?? 0,
     );
   }
 }
