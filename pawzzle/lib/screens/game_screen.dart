@@ -250,7 +250,7 @@ class _GameScreenState extends State<GameScreen> {
                   ),
 
                   const SizedBox(
-                    height: 10,
+                    height: 0,
                   ), // теперь небольшой зазор между таймером и пазлом
                   // --- Пазл с подложкой ---
                   Expanded(
@@ -260,11 +260,11 @@ class _GameScreenState extends State<GameScreen> {
                         children: [
                           Image.asset(
                             'assets/images/ui/puzzle_bg.png',
-                            width: MediaQuery.of(context).size.width * 0.6,
+                            width: MediaQuery.of(context).size.width * 0.9,
                             fit: BoxFit.contain,
                           ),
                           Transform.scale(
-                            scale: 0.7,
+                            scale: 1.1,
                             child: SlidingPuzzleBoard(
                               key: ValueKey(_resetCounter),
                               imagePath: imagePath,

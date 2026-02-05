@@ -157,7 +157,14 @@ class _SlidingPuzzleBoardState extends State<SlidingPuzzleBoard>
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size.width * 0.6;
+    final media = MediaQuery.of(context).size;
+
+    // Берём минимальную сторону экрана
+    final boardSide = min(media.width, media.height) * 0.55;
+
+    // Защита от слишком большого размера
+    final size = boardSide.clamp(200.0, 420.0);
+
     final tileSize = size / widget.gridSize;
 
     if (image == null) {
