@@ -1,5 +1,4 @@
 import { useState } from "react";
-import api from "../api/api";
 import { useNavigate } from "react-router-dom";
 
 export default function Login() {
@@ -7,34 +6,75 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
-  const submit = async (e) => {
+  const submit = (e) => {
     e.preventDefault();
-    try {
-      const res = await api.post("/auth/login", { email, password });
-      localStorage.setItem("token", res.data.token);
-      navigate("/");
-    } catch {
-      alert("Ошибка авторизации");
+
+    // Фейковая проверка
+    if (email === "admin@mail.com" && password === "1234") {
+      localStorage.setItem("token", "fake-jwt-token");
+      navigate("/dashboard");
+    } else {
+      alert("Неверный логин или пароль");
     }
   };
 
   return (
-    <div style={{ padding: 40 }}>
-      <h2>Вход администратора</h2>
-      <form onSubmit={submit}>
+    <div style={styles.container}>
+      <form onSubmit={submit} style={styles.form}>
+        <h2 style={{ marginBottom: 20 }}>Вход администратора</h2>
+
         <input
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-        /><br /><br />
+          style={styles.input}
+        />
+
         <input
           type="password"
           placeholder="Пароль"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-        /><br /><br />
-        <button>Войти</button>
+          style={styles.input}
+        />
+
+        <button type="submit" style={styles.button}>
+          Войти
+        </button>
       </form>
     </div>
   );
 }
+
+const styles = {
+  container: {
+    height: "100vh", // на весь экран
+    width: "100%", // чтобы растянуть по горизонтали
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    background: "#f4f6f9",
+  },
+  form: {
+    background: "white",
+    padding: 40,
+    borderRadius: 10,
+    boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
+    display: "flex",
+    flexDirection: "column",
+    width: 300,
+    maxWidth: "90vw", // адаптация под маленькие экраны
+  },
+  input: {
+    marginBottom: 15,
+    padding: 10,
+    fontSize: 14,
+  },
+  button: {
+    padding: 10,
+    background: "#4f46e5",
+    color: "white",
+    border: "none",
+    cursor: "pointer",
+  },
+};
