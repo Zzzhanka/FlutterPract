@@ -4,6 +4,8 @@ import Users from "./pages/Users";
 import Levels from "./pages/Levels";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Navbar from "./components/Navbar";
+import Daily from "./pages/Daily";
+
 
 function Dashboard() {
   return <div>Добро пожаловать в админ-панель</div>;
@@ -76,6 +78,18 @@ export default function App() {
             </ProtectedRoute>
           }
         />
+
+        <Route
+          path="/daily"
+          element={
+            <ProtectedRoute>
+              <AdminLayout>
+                <Daily />
+              </AdminLayout>
+            </ProtectedRoute>
+          }
+        />
+
       </Routes>
     </BrowserRouter>
   );

@@ -1,41 +1,51 @@
-import { useEffect, useState } from "react";
-import api from "../api/api";
+import { useEffect, useState } from 'react'
+import { supabase } from '../supabase'
 
 export default function Users() {
-  const [users, setUsers] = useState([]);
+  const [users, setUsers] = useState([])
 
   useEffect(() => {
-    api.get("/users").then((res) => setUsers(res.data));
-  }, []);
+    fetchUsers()
+  }, [])
 
-  const blockUser = async (id) => {
-    await api.put(`/users/${id}/block`);
-    setUsers(users.map(u =>
-      u.id === id ? { ...u, is_blocked: !u.is_blocked } : u
-    ));
-  };
+  async function fetchUsers() {
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+
+    if (!error) setUsers(data)
+  }
+
+  async function toggleBlock(user) {
+    await supabase
+      .from('users')
+      .update({ is_blocked: !user.is_blocked })
+      .eq('id', user.id)
+
+    fetchUsers()
+  }
 
   return (
-    <div style={{ padding: 20 }}>
+    <div>
       <h2>Пользователи</h2>
-      <table border="1" cellPadding="8">
+      <table>
         <thead>
           <tr>
             <th>Email</th>
             <th>Роль</th>
             <th>Статус</th>
-            <th></th>
+            <th>Действие</th>
           </tr>
         </thead>
         <tbody>
-          {users.map(u => (
-            <tr key={u.id}>
-              <td>{u.email}</td>
-              <td>{u.role}</td>
-              <td>{u.is_blocked ? "Заблокирован" : "Активен"}</td>
+          {users.map(user => (
+            <tr key={user.id}>
+              <td>{user.email}</td>
+              <td>{user.role}</td>
+              <td>{user.is_blocked ? 'Заблокирован' : 'Активен'}</td>
               <td>
-                <button onClick={() => blockUser(u.id)}>
-                  {u.is_blocked ? "Разблокировать" : "Заблокировать"}
+                <button onClick={() => toggleBlock(user)}>
+                  {user.is_blocked ? 'Разблокировать' : 'Блокировать'}
                 </button>
               </td>
             </tr>
@@ -43,5 +53,5 @@ export default function Users() {
         </tbody>
       </table>
     </div>
-  );
+  )
 }

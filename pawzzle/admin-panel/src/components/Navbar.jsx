@@ -12,8 +12,11 @@ export default function Navbar() {
     <nav style={{ padding: 20, background: "#eee" }}>
       <Link to="/">Главная</Link> |{" "}
       <Link to="/users">Пользователи</Link> |{" "}
-      <Link to="/levels">Уровни</Link>
-      <button style={{ float: "right" }} onClick={logout}>Выйти</button>
+      <Link to="/levels">Уровни</Link> |{" "}
+      <Link to="/daily">Ежедневные испытания</Link>
+      <button style={{ float: "right" }} onClick={logout}>
+        Выйти
+      </button>
     </nav>
   );
 }
