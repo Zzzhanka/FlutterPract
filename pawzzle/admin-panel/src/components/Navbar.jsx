@@ -1,22 +1,33 @@
-import { Link, useNavigate } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 
 export default function Navbar() {
-  const navigate = useNavigate();
-
-  const logout = () => {
-    localStorage.removeItem("token");
-    navigate("/login");
-  };
+  const linkStyle = ({ isActive }) => ({
+    display: "block",
+    padding: "12px 20px",
+    margin: "8px 0",
+    textDecoration: "none",
+    color: isActive ? "#fff" : "#333",
+    backgroundColor: isActive ? "#4a90e2" : "transparent",
+    borderRadius: 8,
+    transition: "0.2s",
+  });
 
   return (
-    <nav style={{ padding: 20, background: "#eee" }}>
-      <Link to="/">Главная</Link> |{" "}
-      <Link to="/users">Пользователи</Link> |{" "}
-      <Link to="/levels">Уровни</Link> |{" "}
-      <Link to="/daily">Ежедневные испытания</Link>
-      <button style={{ float: "right" }} onClick={logout}>
-        Выйти
-      </button>
-    </nav>
+    <aside
+      style={{
+        width: 220,
+        padding: 20,
+        backgroundColor: "#fff",
+        borderRight: "1px solid #ddd",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
+      <h2 style={{ marginBottom: 20, color: "#4a90e2" }}>Admin Panel</h2>
+      <NavLink to="/dashboard" style={linkStyle}>Dashboard</NavLink>
+      <NavLink to="/users" style={linkStyle}>Users</NavLink>
+      <NavLink to="/levels" style={linkStyle}>Levels</NavLink>
+      <NavLink to="/daily" style={linkStyle}>Daily</NavLink>
+    </aside>
   );
 }

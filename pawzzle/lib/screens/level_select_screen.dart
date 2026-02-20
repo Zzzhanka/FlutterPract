@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import '../models/puzzle_level.dart';
+import '../models/daily_level.dart'; // ✅ импорт модели DailyLevel
 import 'game_screen.dart';
-import 'main_menu_screen.dart'; // убедись, что есть главный экран
-import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:collection/collection.dart';
+import 'main_menu_screen.dart';
 import '../services/level_service.dart';
 
 class LevelSelectScreen extends StatefulWidget {
@@ -16,12 +15,31 @@ class LevelSelectScreen extends StatefulWidget {
 class _LevelSelectScreenState extends State<LevelSelectScreen> {
   late Future<List<PuzzleLevel>> _levelsFuture;
   final PageController _pageController = PageController();
+
+  DailyLevel? _dailyLevel;
+  Map<String, dynamic>? _dailyAchievement;
+
   int _currentPage = 0;
 
   @override
   void initState() {
     super.initState();
     _levelsFuture = LevelService.instance.fetchLevels();
+    _loadDaily();
+  }
+
+  Future<void> _loadDaily() async {
+    final dailyChallenge = await LevelService.instance
+        .fetchTodayDailyChallenge();
+    if (dailyChallenge != null && dailyChallenge.type == 'level') {
+      final level = await LevelService.instance.getLevelById(dailyChallenge.id);
+      // открываем уровень
+    } else if (dailyChallenge != null && dailyChallenge.type == 'achievement') {
+      final ach = await LevelService.instance.getAchievementById(
+        dailyChallenge.id,
+      );
+      // показываем ачивку
+    }
   }
 
   void _nextPage() {
@@ -211,6 +229,81 @@ class _LevelSelectScreenState extends State<LevelSelectScreen> {
                       );
                     },
                   ),
+
+                  // --- Кнопка ежедневного уровня ---
+                  if (_dailyLevel != null)
+                    Positioned(
+                      bottom: 120,
+                      left: 0,
+                      right: 0,
+                      child: Center(
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 40,
+                              vertical: 15,
+                            ),
+                          ),
+                          onPressed: () async {
+                            final result = await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => GameScreen(
+                                  level: PuzzleLevel(
+                                    id: 999,
+                                    title: _dailyLevel!.title,
+                                    imagePath: _dailyLevel!.imagePath,
+                                    grid: _dailyLevel!.gridSize,
+                                    shuffleMoves: _dailyLevel!.shuffleMoves,
+                                    page: 0,
+                                    isLocked: false,
+                                  ),
+                                ),
+                              ),
+                            );
+
+                            if (result == true) {
+                              await LevelService.instance.addCoins(
+                                _dailyLevel!.rewardCoins,
+                              );
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    '+${_dailyLevel!.rewardCoins} монет!',
+                                  ),
+                                ),
+                              );
+                            }
+                          },
+                          child: const Text('Ежедневный уровень'),
+                        ),
+                      ),
+                    ),
+
+                  // --- Кнопка ежедневной ачивки ---
+                  if (_dailyAchievement != null)
+                    Positioned(
+                      bottom: 60,
+                      left: 0,
+                      right: 0,
+                      child: Center(
+                        child: ElevatedButton(
+                          onPressed: () async {
+                            await LevelService.instance.addCoins(
+                              _dailyAchievement!['reward_coins'],
+                            );
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  'Ачивка выполнена! +${_dailyAchievement!['reward_coins']} монет',
+                                ),
+                              ),
+                            );
+                          },
+                          child: Text(_dailyAchievement!['title']),
+                        ),
+                      ),
+                    ),
 
                   // --- Левая стрелка ---
                   Positioned(

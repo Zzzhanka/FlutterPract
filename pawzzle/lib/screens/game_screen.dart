@@ -7,8 +7,9 @@ import '../services/level_service.dart';
 
 class GameScreen extends StatefulWidget {
   final PuzzleLevel level;
+  final bool isDaily; // добавляем параметр
 
-  const GameScreen({super.key, required this.level});
+  const GameScreen({super.key, required this.level, this.isDaily = false});
 
   @override
   State<GameScreen> createState() => _GameScreenState();

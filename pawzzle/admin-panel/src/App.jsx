@@ -2,35 +2,24 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Login from "./pages/Login";
 import Users from "./pages/Users";
 import Levels from "./pages/Levels";
+import Daily from "./pages/Daily";
+import Dashboard from "./pages/Dashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Navbar from "./components/Navbar";
-import Daily from "./pages/Daily";
 
-
-function Dashboard() {
-  return <div>Добро пожаловать в админ-панель</div>;
-}
-
-// Общий layout для защищенных страниц
 function AdminLayout({ children }) {
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        minHeight: "100vh",
-        width: "100%",
-      }}
-    >
-      <Navbar />
+    <div style={{ display: "flex", minHeight: "100vh" }}>
+      <Navbar /> {/* боковая навигация */}
       <main
         style={{
           flex: 1,
+          maxWidth: 1200,
           width: "100%",
-          maxWidth: 1200, // максимум ширины контента
-          margin: "0 auto", // центрирование
+          margin: "0 auto",
           padding: 20,
           boxSizing: "border-box",
+          backgroundColor: "#f5f5f5",
         }}
       >
         {children}
@@ -56,7 +45,6 @@ export default function App() {
             </ProtectedRoute>
           }
         />
-
         <Route
           path="/users"
           element={
@@ -67,7 +55,6 @@ export default function App() {
             </ProtectedRoute>
           }
         />
-
         <Route
           path="/levels"
           element={
@@ -78,7 +65,6 @@ export default function App() {
             </ProtectedRoute>
           }
         />
-
         <Route
           path="/daily"
           element={
@@ -89,7 +75,6 @@ export default function App() {
             </ProtectedRoute>
           }
         />
-
       </Routes>
     </BrowserRouter>
   );

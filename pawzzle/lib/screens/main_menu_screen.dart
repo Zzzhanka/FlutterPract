@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-
-// относительные импорты — файлы должны лежать в той же папке lib/screens/
+import '../models/puzzle_level.dart';
+import '../services/level_service.dart';
+import 'game_screen.dart';
 import 'level_select_screen.dart';
 import 'settings_screen.dart';
 import 'tutorial_screen.dart';
@@ -16,6 +17,66 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
   double _scalePlay = 1.0;
   double _scaleSettings = 1.0;
   double _scaleHelp = 1.0;
+  DailyChallenge? _dailyChallenge;
+  PuzzleLevel? _dailyLevel;
+  Map<String, dynamic>? _dailyAchievement;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadDailyChallenge();
+  }
+
+  Future<void> _loadDailyChallenge() async {
+    _dailyChallenge = await LevelService.instance.fetchTodayDailyChallenge();
+    print('Daily challenge: $_dailyChallenge');
+
+    if (_dailyChallenge != null) {
+      if (_dailyChallenge!.type == 'level') {
+        _dailyLevel = await LevelService.instance.getLevelById(
+          _dailyChallenge!.id as int,
+        );
+      } else if (_dailyChallenge!.type == 'achievement') {
+        _dailyAchievement = await LevelService.instance.getAchievementById(
+          _dailyChallenge!.id.toString(),
+        );
+      }
+    }
+    setState(() {});
+  }
+
+  void _openDailyChallenge() {
+    if (_dailyLevel != null) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => GameScreen(level: _dailyLevel!)),
+      );
+    } else if (_dailyAchievement != null) {
+      showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: const Text('Ежедневная ачивка!'),
+          content: Text(_dailyAchievement!['title']),
+          actions: [
+            ElevatedButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Закрыть'),
+            ),
+          ],
+        ),
+      );
+    } else {
+      // резервный уровень (если ежедневного нет)
+      LevelService.instance.fetchLevels().then((levels) {
+        if (levels.isNotEmpty) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => GameScreen(level: levels.first)),
+          );
+        }
+      });
+    }
+  }
 
   Widget _buildCircleButton({
     required String imagePath,
@@ -74,7 +135,7 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
           return Stack(
             fit: StackFit.expand,
             children: [
-              // Фон — надёжно растягиваем по контейнеру
+              // Фон
               Positioned.fill(
                 child: FittedBox(
                   fit: BoxFit.cover,
@@ -82,14 +143,28 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
                     'assets/images/ui/main_bg.png',
                     width: constraints.maxWidth,
                     height: constraints.maxHeight,
-                    errorBuilder: (c, e, s) => Container(
-                      color: const Color.fromARGB(255, 255, 255, 255),
+                  ),
+                ),
+              ),
+
+              // Кнопка Daily — всегда активна
+              Positioned(
+                top: 40,
+                right: 30,
+                child: ElevatedButton.icon(
+                  icon: const Icon(Icons.today),
+                  label: const Text('Ежедневное испытание'),
+                  onPressed: _openDailyChallenge,
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 12,
                     ),
                   ),
                 ),
               ),
 
-              // Кнопки — ряд, чуть ниже и левее
+              // Основные кнопки
               Positioned(
                 bottom: constraints.maxHeight * 0.18,
                 left: constraints.maxWidth * 0.22,

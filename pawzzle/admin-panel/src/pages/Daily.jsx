@@ -4,66 +4,93 @@ import { supabase } from "../supabase";
 export default function Daily() {
   const [levels, setLevels] = useState([]);
   const [achievements, setAchievements] = useState([]);
-  const [type, setType] = useState("level");
-  const [selected, setSelected] = useState("");
+  const [selectedLevel, setSelectedLevel] = useState("");
+  const [selectedAch, setSelectedAch] = useState("");
 
   useEffect(() => {
-    supabase.from("levels").select("*").then(res => setLevels(res.data));
-    supabase.from("achievements").select("*").then(res => setAchievements(res.data));
+    const fetchData = async () => {
+      const { data: lvls } = await supabase.from("levels").select("id, title");
+      setLevels(lvls || []);
+
+      const { data: achs } = await supabase
+        .from("achievements")
+        .select("id, title");
+      setAchievements(achs || []);
+    };
+    fetchData();
   }, []);
 
-  async function createChallenge() {
-  if (!selected) {
-    alert("Выберите уровень");
-    return;
-  }
+  const saveDailyChallenge = async () => {
+    if (!selectedLevel && !selectedAch) {
+      alert("Выберите уровень или ачивку!");
+      return;
+    }
 
-  const { data, error } = await supabase
-    .from("daily_challenges")
-    .insert({
-      level_id: Number(selected),
+    const payload = {
       challenge_date: new Date().toISOString().split("T")[0],
-      is_active: true
-    })
-    .select();
+      challenge_type: selectedLevel ? "level" : "achievement",
+      challenge_id: selectedLevel || selectedAch,
+    };
 
-  if (error) {
-    console.error(error);
-    alert("Ошибка: " + error.message);
-  } else {
-    alert("Уровень дня назначен!");
-  }
-}
+    const { error } = await supabase.from("daily_challenges").upsert(payload);
+
+    if (error) {
+      alert("Ошибка: " + error.message);
+    } else {
+      alert("Ежедневное испытание сохранено!");
+    }
+  };
 
   return (
-    <div>,     
-      <h2>Ежедневное испытание</h2>
+    <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+      <h2>Выбрать Daily Challenge</h2>
 
-      <select onChange={e => setType(e.target.value)}>
-        <option value="level">Уровень</option>
-        <option value="achievement">Ачивка</option>
-      </select>
+      <div style={{ display: "flex", gap: 20 }}>
+        <div style={{ flex: 1 }}>
+          <h3>Выберите уровень</h3>
+          <select
+            style={{ width: "100%", padding: 10 }}
+            value={selectedLevel}
+            onChange={(e) => setSelectedLevel(e.target.value)}
+          >
+            <option value="">-- Уровень не выбран --</option>
+            {levels.map((lvl) => (
+              <option key={lvl.id} value={lvl.id}>
+                {lvl.title}
+              </option>
+            ))}
+          </select>
+        </div>
 
-      <select onChange={e => setSelected(e.target.value)}>
-        <option>Выберите</option>
+        <div style={{ flex: 1 }}>
+          <h3>Выберите ачивку</h3>
+          <select
+            style={{ width: "100%", padding: 10 }}
+            value={selectedAch}
+            onChange={(e) => setSelectedAch(e.target.value)}
+          >
+            <option value="">-- Ачивка не выбрана --</option>
+            {achievements.map((ach) => (
+              <option key={ach.id} value={ach.id}>
+                {ach.title}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
 
-        {type === "level" &&
-          levels.map(l => (
-            <option key={l.id} value={l.id}>
-              Уровень #{l.id}
-            </option>
-          ))}
-
-        {type === "achievement" &&
-          achievements.map(a => (
-            <option key={a.id} value={a.id}>
-              {a.title}
-            </option>
-          ))}
-      </select>
-
-      <button onClick={createChallenge}>
-        Назначить
+      <button
+        style={{
+          padding: "12px 24px",
+          backgroundColor: "#4a90e2",
+          color: "#fff",
+          border: "none",
+          borderRadius: 8,
+          cursor: "pointer",
+        }}
+        onClick={saveDailyChallenge}
+      >
+        Сохранить
       </button>
     </div>
   );
